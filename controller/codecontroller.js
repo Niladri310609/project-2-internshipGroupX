@@ -57,7 +57,7 @@ let collegeData = async (req, res) => {
 //========================================================== API for Intern ======================================================================
 let internData = async (req, res) => {
   try {
-    let {name,email,mobile,collegeName} = req.body;
+    let { name, email, mobile, collegeName } = req.body;
 
     if (Object.keys(req.body).length == 0)
       return res
@@ -85,7 +85,7 @@ let internData = async (req, res) => {
         .status(404)
         .send({ status: false, msg: "Mobile Number missing" });
     if (mobile) {
-      let validMobile = await internModel.findOne({ mobile:mobile });
+      let validMobile = await internModel.findOne({ mobile: mobile });
       if (validMobile) {
         return res
           .status(400)
@@ -93,23 +93,22 @@ let internData = async (req, res) => {
       }
     }
 
-    if(!collegeName){
-      return res.status(400).send({ status: false, message: "collegeName is required" })
-      
+    if (!collegeName) {
+      return res
+        .status(400)
+        .send({ status: false, message: "collegeName is required" });
+    }
 
-  }
-  
-  const doc = await collegeModel.findOne({name:collegeName})
-  if(!doc){
-    return res.status(400).send({ status: false, message: "collegeName is not registered" })
-      
-  }
+    const doc = await collegeModel.findOne({ name: collegeName });
+    if (!doc) {
+      return res
+        .status(400)
+        .send({ status: false, message: "collegeName is not registered" });
+    }
 
-  
-  let collegeId = doc._id 
-  const result = await internModel.create({name,email,mobile,collegeId})
-  res.status(201).send({ status: true, data: result });
-
+    let collegeId = doc._id;
+    const result = await internModel.create({ name, email, mobile, collegeId });
+    res.status(201).send({ status: true, data: result });
   } catch (err) {
     return res.status(500).send({ statuS: false, msg: err.message });
   }
@@ -133,15 +132,25 @@ let getCollegeDetails = async (req, res) => {
     if (!search)
       return res.status(400).send({ status: false, msg: "No College Found" });
     let id = search._id.toString();
-    let intern = await internModel.find({ collegeId: id });
-    let op = {
-      name: search.name,
-      fullName: search.fullName,
-      logoLink: search.logoLink,
-      interests: intern,
-    };
 
-    res.status(200).send({ status: true, msg: op });
+    let intern = await internModel.find({ collegeId: id });
+
+    if (intern.length == 0) {
+      return res
+        .status(400)
+        .send({
+          status: false,
+          msg: "No interns available for this collegeName",
+        });
+    } else {
+      let op = {
+        name: search.name,
+        fullName: search.fullName,
+        logoLink: search.logoLink,
+        interests: intern,
+      };
+      res.status(200).send({ status: true, msg: op });
+    }
   } catch (err) {
     res.status(500).send({ status: false, msg: err.message });
   }
